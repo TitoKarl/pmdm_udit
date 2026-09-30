@@ -22,14 +22,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.aplicacionlink.ui.theme.AplicacionLinkTheme
+import android.widget.Button
+import androidx.compose.material3.ButtonDefaults
+
 
 @Composable
 fun TarjetaPresentacion() {
@@ -49,6 +54,7 @@ fun TarjetaPresentacion() {
                 .size(105.dp)
                 .clip(CircleShape),
             contentScale = ContentScale.Crop
+
         )
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -56,7 +62,9 @@ fun TarjetaPresentacion() {
         Text(
             text = "Carlos Rodriguez",
             fontSize = 32.sp,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
+            fontStyle = FontStyle.Italic,
+            color = Color.DarkGray
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -76,9 +84,15 @@ fun TarjetaPresentacion() {
                     Uri.parse("https://github.com/TitoKarl")
                 )
                 context.startActivity(intent)
-            }
+            },
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFF4A90D9),
+                contentColor = Color.White
+            )
         ) {
-            Text(text = "Mi Perfil de GitHub")
+            Text(text = "Mi Perfil de GitHub"
+            )
+
         }
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -89,12 +103,34 @@ fun TarjetaPresentacion() {
                     Uri.parse("https://www.linkedin.com/in/carlos-rodriguez-8869a42a5/")
                 )
                 context.startActivity(intent)
-            }
+            },
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFF0A66C2),
+                contentColor = Color.White
+            )
         ) {
             Text(text = "Mi Perfil de Linkedin")
         }
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Button(
+            onClick = {
+                val intent = Intent(
+                    Intent.ACTION_VIEW,
+                    Uri.parse("https://www.infojobs.net/candidate/cv/view/index.xhtml")
+                )
+                context.startActivity(intent)
+            },
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFF064A8F),
+                contentColor = Color.White
+            )
+        ) {
+            Text(text = "Mi Perfil de InfoJobs")
+        }
     }
 }
+
 
 @Preview(showBackground = true)
 @Composable
