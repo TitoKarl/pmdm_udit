@@ -79,9 +79,11 @@ fun TarjetaPresentacion() {
 
         Button(
             onClick = {
+
                 val intent = Intent(
                     Intent.ACTION_VIEW,
                     Uri.parse("https://github.com/TitoKarl")
+
                 )
                 context.startActivity(intent)
             },
