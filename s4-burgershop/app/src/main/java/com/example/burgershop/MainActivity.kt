@@ -52,5 +52,30 @@ val catalogoHamburguesas = listOf(
         "Clasica con queso",
         "6,50 €",
         R.drawable.burger_clasica
-    )
+    ),
+    Producto(
+        "BBQ Bacon",
+        "7,90 €",
+        R.drawable.burger_bbq
+    ),
+    Producto(
+        "Doble carne",
+        "8,50 €",
+        R.drawable.burger_doble
+    ),
+    Producto(
+        "Vegetariana",
+        "7,20 €",
+        R.drawable.burger_vegetariana
+    ),
+    Producto(
+        "Picante Jalapeño",
+        "7,80 €",
+        R.drawable.burger_picante
+    ),
+    Producto(
+        "Pollo Cirspy",
+        "6,90 €",
+        R.drawable.burger_pollo
+    ),
 )
