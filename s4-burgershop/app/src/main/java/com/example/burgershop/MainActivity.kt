@@ -1,12 +1,10 @@
 package com.example.burgershop
 
 import android.os.Bundle
-import android.os.PersistableBundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -25,7 +23,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.autofill.ContentDataType
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -33,16 +30,18 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.burgershop.ui.theme.BurgerShopTheme
-// ACTIVITY PRINCIPAL
+
+//ACTIVITY PRINCIPAL
+// La puerta de entrada de app.
 class MainActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?, persistentState: PersistableBundle?) {
-        super.onCreate(savedInstanceState, persistentState)
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
 
         setContent {
             //MaterialTheme: aplica los colores y
-            //tipografias por defecto a todo lo que hay dentro
+            // tipografías por defecto a todo lo que hay dentro
             MaterialTheme{
-                // Surface: el "lienzo" de fondo ocupa la pantalla
+                // Surface: el "Lienzo" de fondo que ocupa la pantalla
                 Surface(
                     modifier = Modifier.fillMaxSize()
                 ) {
@@ -52,32 +51,35 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
-// MODELO DE DATOS
-//EL "modelo" que define que informacion tiene cada producti
 
-data class Producto(
+// MODELO DE DATOS
+//EL "molde" que define que informacion tiene cada producto
+
+data class Producto (
     val nombre : String,
-    val precio : String,
-    val imanResID : Int // el identificador de la imagen
+    val precio: String,
+    val imanResId: Int // el identificador de la imagen en res/drawable
 )
 
-// DATOS DE PRUEBA (Hardcodeados)
-// De momento viven aqui mismo, en el codigo. No vienen de ningun servidor
+// DATOS DE PRUEBA (harcodeados)
+// De momento viven aqui mismo, en el código. No vienen de ningún servidor
 // ni base de datos
 
 val catalogoHamburguesas = listOf(
     Producto(
-        "Clasica con queso",
+        "Clásica con Queso",
         "6,50 €",
         R.drawable.burger_clasica
     ),
+
     Producto(
         "BBQ Bacon",
         "7,90 €",
         R.drawable.burger_bbq
     ),
+
     Producto(
-        "Doble carne",
+        "Doble Carne",
         "8,50 €",
         R.drawable.burger_doble
     ),
@@ -92,63 +94,66 @@ val catalogoHamburguesas = listOf(
         R.drawable.burger_picante
     ),
     Producto(
-        "Pollo Cirspy",
+        "Pollo Crispy",
         "6,90 €",
         R.drawable.burger_pollo
     ),
-)
-// CATALOGO
-// LazyColumn: pinta una lista que se puede recorres en scroll
-// vertica, solo dibuja en memoria lo que se ve en memoria
+
+    )
+
+//CATÁLOGO
+//LazyColumn: pinta una lista que se puede recorrer en scroll
+//vertical. solo dibuja en memoria lo que se ve en pantalla
 // (por eso se llama "lazy", perezoso): es eficiente aunque la lista
-// tenga cietos de elementos
+//tenga cientos de elementos
 @Composable
-fun CatalogoHamburguesas(producto: List<Producto>) {
+fun CatalogoHamburguesas(productos: List<Producto>) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
-        // margen alrededor de toda la lista
+        // margen alredor de toda la lista
         contentPadding = PaddingValues(16.dp),
         // espacio entre una tarjeta y la siguiente
         verticalArrangement = Arrangement.spacedBy(16.dp)
+
     ) {
-        items(producto){ producto ->
+        items(productos){ producto ->
             TarjetaProducto(producto)
         }
     }
 }
 
 //TARJETA DE PRODUCTO
-//Una "caja" (Card) con imagen arriba y datos + boton
+//Una "caja" (Card) con imagen arriba y datos + botón
 @Composable
 fun TarjetaProducto(producto: Producto){
 
-    //Card: una superficie elevada, con sombra y borden redondeados
-    // por defecto - ideal para agrupar  visualmente la info de un producto
+    //Card: una superficie elevada, con sombra y bordes redondeados
+    // por defecto - ideal para agrupar visualmente la info de un producto
 
     Card(
         modifier = Modifier.fillMaxWidth()
     ) {
-        //Column: apial sus elementos de arriba a abajo (flexbox)
+        //Column: apila sus elementos de arriba a abajo (flexbox)
         Column {
             Image(
                 painter = painterResource(
-                    id = producto.imanResID
+                    id = producto.imanResId
                 ),
                 // para accesibilidad (lectores de pantalla)
                 contentDescription = producto.nombre,
                 modifier = Modifier
-                    .fillMaxWidth()// Ocupa todo el ancho de la tarjeta
-                    .height(100.dp),
-                contentScale = ContentScale.Crop // Recorta la imagen sin deformarse
+                    .fillMaxWidth()//Ocupa todo el ancho de la tarjeta
+                    .height(180.dp), // alto - fijo es justo -- "se rompe al rotar la pantalla
+                contentScale = ContentScale.Crop // Recorta la imagen sin deformarla
             )
 
-            // Segunda Column, con margen interior para el texto y el boton
+            // Segunda Column, con margen interior, para el texto y el boton
             Column(
                 modifier = Modifier.padding(12.dp)
             ) {
                 Text(
                     text = producto.nombre,
-                    fontSize = 10.sp,
+                    fontSize = 18.sp,
                     fontWeight = FontWeight.Bold
                 )
 
@@ -157,14 +162,14 @@ fun TarjetaProducto(producto: Producto){
                 Text(
                     text = producto.precio,
                     fontSize = 16.sp,
-                    color = MaterialTheme.colorScheme.primary // color del tema
+                    color = MaterialTheme.colorScheme.primary // colore del tema
                 )
 
                 Spacer(modifier = Modifier.height(8.dp)) // hueco mediano
 
                 Button(
                     onClick = {
-                        //De momento no hace nada
+                        //De momento no hace nada: la interactividad
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {
@@ -173,5 +178,4 @@ fun TarjetaProducto(producto: Producto){
             }
         }
     }
-
 }
