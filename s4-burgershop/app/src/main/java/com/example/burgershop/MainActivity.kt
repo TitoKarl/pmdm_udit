@@ -5,8 +5,11 @@ import android.os.PersistableBundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -14,6 +17,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.example.burgershop.ui.theme.BurgerShopTheme
 // ACTIVITY PRINCIPAL
 class MainActivity : ComponentActivity() {
@@ -79,3 +83,22 @@ val catalogoHamburguesas = listOf(
         R.drawable.burger_pollo
     ),
 )
+// CATALOGO
+// LazyColumn: pinta una lista que se puede recorres en scroll
+// vertica, solo dibuja en memoria lo que se ve en memoria
+// (por eso se llama "lazy", perezoso): es eficiente aunque la lista
+// tenga cietos de elementos
+@Composable
+fun CatalogoHamburguesas(producto: List<Producto>) {
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        // margen alrededor de toda la lista
+        contentPadding = PaddingValues(16.dp),
+        // espacio entre una tarjeta y la siguiente
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        items(producto){ producto
+            TarjetaProducto(producto)
+        }
+    }
+}
