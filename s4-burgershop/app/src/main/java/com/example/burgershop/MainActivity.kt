@@ -28,9 +28,29 @@ class MainActivity : ComponentActivity() {
                 Surface(
                     modifier = Modifier.fillMaxSize()
                 ) {
-                  //  CatalogoHamburguesas(catalogoHamburguesa)
+                  //  CatalogoHamburguesas(catalogoHamburguesas)
                 }
             }
         }
     }
 }
+// MODELO DE DATOS
+//EL "modelo" que define que informacion tiene cada producti
+
+data class Producto(
+    val nombre : String,
+    val precio : String,
+    val imanResID : Int // el identificador de la imagen
+)
+
+// DATOS DE PRUEBA (Hardcodeados)
+// De momento viven aqui mismo, en el codigo. No vienen de ningun servidor
+// ni base de datos
+
+val catalogoHamburguesas = listOf(
+    Producto(
+        "Clasica con queso",
+        "6,50 €",
+        R.drawable.burger_clasica
+    )
+)
