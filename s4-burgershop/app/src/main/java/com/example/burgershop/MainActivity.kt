@@ -5,17 +5,27 @@ import android.os.PersistableBundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.autofill.ContentDataType
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.burgershop.ui.theme.BurgerShopTheme
@@ -97,8 +107,37 @@ fun CatalogoHamburguesas(producto: List<Producto>) {
         // espacio entre una tarjeta y la siguiente
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        items(producto){ producto
+        items(producto){ producto ->
             TarjetaProducto(producto)
         }
     }
+}
+
+//TARJETA DE PRODUCTO
+//Una "caja" (Card) con imagen arriba y datos + boton
+@Composable
+fun TarjetaProducto(producto: Producto){
+
+    //Card: una superficie elevada, con sombra y borden redondeados
+    // por defecto - ideal para agrupar  visualmente la info de un producto
+
+    Card(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        //Column: apial sus elementos de arriba a abajo (flexbox)
+        Column {
+            Image(
+                painter = painterResource(
+                    id = producto.imanResID
+                ),
+                // para accesibilidad (lectores de pantalla)
+                contentDescription = producto.nombre,
+                modifier = Modifier
+                    .fillMaxWidth()// Ocupa todo el ancho de la tarjeta
+                    .height(100.dp),
+                contentScale = ContentScale.Crop // Recorta la imagen sin deformarse
+            )
+        }
+    }
+
 }
