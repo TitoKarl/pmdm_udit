@@ -227,7 +227,6 @@ fun PantallaPrincipal(){
             Text("BurgerShop", fontSize = 32.sp, fontWeight = FontWeight.Bold)
         }
     } else {
-       // CatalogoHamburguesas(productos = catalogoHamburguesas)
-        PantallaPrincipal()
+       CatalogoHambuerguesas(productos = catalogoHamburguesas)
     }
 }
