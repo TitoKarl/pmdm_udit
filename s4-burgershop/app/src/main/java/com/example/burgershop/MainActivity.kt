@@ -215,7 +215,7 @@ fun PantallaPrincipal(){
     var mostrarPortada by remember { mutableStateOf(true) }
 
     LaunchedEffect(Unit) {
-        // LaunchedEffect_ Lanza una tarea que se ejecuta una sola ver
+        // LaunchedEffect: Lanza una tarea que se ejecuta una sola ver
         // cuando la pantalla aparece, debe esperar 1.5 seg y luego
         // cambia de estado para ocultar esa pantalla
         delay(1500)
