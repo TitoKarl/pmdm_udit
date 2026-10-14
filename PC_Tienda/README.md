@@ -7,10 +7,10 @@
 
 ## 📱 Producto Final (Capturas)
 
-[AÑADE TU CAPTURA DE MÓVIL AQUÍ]
+
 ![alt text](image-2.png)
 ![alt text](image-3.png)
-[AÑADE TU CAPTURA DE TABLET AQUÍ]
+
 ![alt text](image-4.png)
 
 ### Esquema de referencia
@@ -56,3 +56,5 @@ Comprender la fragmentación de pantallas en Android y resolver los problemas de
 ## 🐞 Dificultades y cómo las resolví
 *(Opcional: Si te atascaste en algo durante el reto, explica aquí qué fue y cómo lo solucionaste).*
 - *[Explica aquí tu dificultad]*
+
+*[Enlace Github: https://github.com/TitoKarl/pmdm_udit/tree/main/PC_Tienda]*
