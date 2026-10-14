@@ -37,7 +37,7 @@ Comprender la fragmentación de pantallas en Android y resolver los problemas de
 *(Por que al arrancar la app, no salian las columnas bien: Por que las secciones column no estaban organizadas de la manera correcta).*
 
 1. **Sobre la adaptabilidad:** ¿Por qué hemos usado `GridCells.Adaptive(minSize = ...)` en lugar de fijar el número de columnas con `GridCells.Fixed(2)`? ¿Qué ventaja tiene en el mundo real?
-   > *[Por que nos permite crear columnas mas rapidamente y de forma automatica, en el mundo real si se piden muchas columnas, solo habria que cambiar una linea de codigo]*
+   > *[Por que nos permite crear celdas de forma mas eficiente, en el mundo real si se piden muchas columnas, solo habria que cambiar una linea de codigo]*
 
 2. **Sobre el diseño UI:** ¿Qué ocurría con las tarjetas si el nombre de un producto era muy largo y ocupaba dos líneas mientras los demás ocupaban una? ¿Cómo lo hemos solucionado?
    > *[Que se solaparian entre si y lo he solucionado haciendo el texto mas corto]*
