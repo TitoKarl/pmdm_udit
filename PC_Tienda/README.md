@@ -6,11 +6,12 @@
 **RA vinculado:** RA1 y RA2 · Interfaces adaptables y limitaciones del dispositivo
 
 ## 📱 Producto Final (Capturas)
-![alt text](image.png)
-![alt text](image-1.png)
 
 [AÑADE TU CAPTURA DE MÓVIL AQUÍ]
+![alt text](image-2.png)
+![alt text](image-3.png)
 [AÑADE TU CAPTURA DE TABLET AQUÍ]
+![alt text](image-4.png)
 
 ### Esquema de referencia
 Así debería comportarse tu cuadrícula: mismas tarjetas, mismo código, más columnas cuando hay más espacio.
@@ -32,19 +33,20 @@ Comprender la fragmentación de pantallas en Android y resolver los problemas de
 | **Mock Data (Datos)** | Uso de una `data class` y una lista local para simular la información antes de conectar una base de datos real. |
 
 ## 🧐 Reflexión y Pensamiento Crítico
-*(Responde a estas preguntas brevemente con tus propias palabras. Te servirán para la defensa oral).*
+*(Por que no salian bien las imagenes: Por que el LazyVerticalGrid estaba mal configurado).*
+*(Por que al arrancar la app, no salian las columnas bien: Por que las secciones column no estaban organizadas de la manera correcta).*
 
 1. **Sobre la adaptabilidad:** ¿Por qué hemos usado `GridCells.Adaptive(minSize = ...)` en lugar de fijar el número de columnas con `GridCells.Fixed(2)`? ¿Qué ventaja tiene en el mundo real?
-   > *[Tu respuesta aquí]*
+   > *[Por que nos permite crear columnas mas rapidamente y de forma automatica, en el mundo real si se piden muchas columnas, solo habria que cambiar una linea de codigo]*
 
 2. **Sobre el diseño UI:** ¿Qué ocurría con las tarjetas si el nombre de un producto era muy largo y ocupaba dos líneas mientras los demás ocupaban una? ¿Cómo lo hemos solucionado?
-   > *[Tu respuesta aquí]*
+   > *[Que se solaparian entre si y lo he solucionado haciendo el texto mas corto]*
 
 3. **Sobre las imágenes:** ¿Por qué es importante usar `ContentScale.Crop` en la imagen del producto cuando cambiamos el ancho de la tarjeta al rotar la pantalla?
-   > *[Tu respuesta aquí]*
+   > *[Por que sino al rotar la pantalla, la imagen no se ajustaria]*
 
 4. **Visión de futuro:** Ahora mismo nuestros productos están escritos directamente en el código (*hardcodeados*). ¿Qué crees que necesitaría nuestra app en el futuro para que esta tienda mostrara productos reales de internet?
-   > *[Tu respuesta aquí]*
+   > *[Necesitaria unos enlaces reales a productos que existan]*
 
 ## 🚀 Cómo ejecutar el proyecto
 1. Clonar el repositorio y abrir en Android Studio.

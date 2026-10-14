@@ -2,6 +2,7 @@
 package com.example.pc_tienda
 
 import android.content.Intent
+import android.content.res.Configuration
 import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -33,6 +34,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -100,8 +102,18 @@ val catalogoPc = listOf(
 
 @Composable
 fun CatalogoPc(productos: List<Producto>) {
+    val configuracion = LocalConfiguration.current
+
+    val columnas = if (
+        configuracion.orientation == Configuration.ORIENTATION_LANDSCAPE
+    ) {
+        4
+    } else {
+        2
+    }
+
     LazyVerticalGrid(
-        columns = GridCells.Adaptive(minSize = 250.dp),
+        columns = GridCells.Fixed(columnas),
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(16.dp),
         horizontalArrangement = Arrangement.spacedBy(16.dp),
