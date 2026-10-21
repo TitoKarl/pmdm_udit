@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 // main(): el punto de arranque de CUALQUIER app Flutter.
 // Siempre existe, un runApp() = onCreate() en Kotlin
 void main () {
-  runApp(const BurgerShopApp());
+  runApp(const BurgerShoppApp());
 }
 
 //APP RAIZ
@@ -25,7 +25,7 @@ class BurgerShoppApp extends StatelessWidget {
     title: 'BurgerShop',
     theme: ThemeData(
       // COLOR DE LA APP: esta es la unica linea para cambiar el aspecto
-      colorScheme: Colors.deepOrange,
+      colorSchemeSeed: Colors.deepOrange,
       useMaterial3: true,
 
 
@@ -132,7 +132,7 @@ class PantallaCatalogo extends StatelessWidget {
             itemCount: catalogoHambuerguesa.length, //cuantos elementos tiene la lista
             itemBuilder: (context, index){
               final producto = catalogoHambuerguesa[index];
-              return TarjetaProducto(producto: producto);
+              // return TarjetaProducto(producto: producto);
             },
           );
         },
@@ -140,3 +140,67 @@ class PantallaCatalogo extends StatelessWidget {
     );
   }
 }
+
+// TARJETA DE PRODUCTO
+class TarjetaProducto extends StatelessWidget {
+  final Producto producto; // Este eldato para dibujar
+  const TarjetaProducto({super.key, required this.producto});
+
+  @override
+  Widget build(BuildContext context) {
+    // Card: una caja con sombra y bordes redondeados por defecto
+    // Es ogual a nuestro Card de Compose
+    return Card(
+      margin: EdgeInsets.zero, // El huevo entre las tarjetas
+      clipBehavior: Clip.antiAlias, // Recorta la imagen a las esquinas redondeadas
+
+      // Colum: apila elemenos de arriba a abajo
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start, //alina el texto a la inquierda
+        children: [
+          //Expanded: la imagen ocupa TODO el alto
+          Expanded(
+              child: Image.asset(
+                producto.imagenAsset,
+                width: double.infinity, // Ocupa todo el acnho disponible
+                fit: BoxFit.cover,
+              ),
+          ),
+          // Segunda Column, conmargen interior, para el texto y el boton
+          Padding(
+              padding: const EdgeInsets.all(12),
+            child: Column(
+              mainAxisSize: MainAxisSize.min, // Ocupa solo lo que necesita su contenido
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  producto.nombre,
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 4,), // Spacer(height) en kotlin
+
+                Text(
+                  producto.precio,
+                  style: TextStyle(fontSize: 16, color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.bold),
+
+                ),
+                const SizedBox(height: 4,), // Spacer(height) en kotlin
+
+                SizedBox(
+                  width: double.infinity, // El boton ocupa TODO el ancho
+                  child: ElevatedButton(
+                    onPressed: () {
+                      // De momento no hace nada, pero en consola dira Añadido al carrito
+                      print('¡Añadido :  ${producto.nombre}!');
+                    }, child: const Text('¡Añadido al carrito!'),
+                  ),
+                )
+              ],
+            )
+          )
+        ],
+      ),
+    );
+  }
+}
+
