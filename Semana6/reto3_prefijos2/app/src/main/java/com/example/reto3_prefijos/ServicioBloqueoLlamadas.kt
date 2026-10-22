@@ -34,7 +34,7 @@ class ServicioBloqueoLlamadas : CallScreeningService() {
             .setDisallowCall(bloquear)
             .setRejectCall(bloquear)
             .setSkipCallLog(false)
-            .setSkipNotification(false)
+            .setSkipNotification(bloquear)
             .build()
 
         respondToCall(callDetails, respuesta)

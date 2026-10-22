@@ -12,7 +12,10 @@ package com.example.reto3_prefijos
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.database.ContentObserver
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.provider.CallLog
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -36,13 +39,24 @@ data class Llamada(
     val numero: String,
     val prefijo: String,
     val tipo: String,
-    val fecha: String
+    val fecha: String,
+    val bloqueada: Boolean
 )
 
 class MainActivity : ComponentActivity() {
 
     private fun obtenerLlamadas(): List<Llamada> {
         val llamadas = mutableListOf<Llamada>()
+
+        // Las llamadas bloqueadas o rechazadas no se guardan como INCOMING_TYPE:
+        // el servicio de filtrado las registra como BLOCKED_TYPE o REJECTED_TYPE.
+        // Hay que incluir todos los tipos para no perder llamadas en el contador.
+        val tiposRegistrados = arrayOf(
+            CallLog.Calls.INCOMING_TYPE,
+            CallLog.Calls.MISSED_TYPE,
+            CallLog.Calls.REJECTED_TYPE,
+            CallLog.Calls.BLOCKED_TYPE
+        )
 
         val cursor = contentResolver.query(
             CallLog.Calls.CONTENT_URI,
@@ -51,18 +65,20 @@ class MainActivity : ComponentActivity() {
                 CallLog.Calls.DATE,
                 CallLog.Calls.TYPE
             ),
-            "${CallLog.Calls.TYPE} = ?",
-            arrayOf(CallLog.Calls.INCOMING_TYPE.toString()),
+            "${CallLog.Calls.TYPE} IN (?, ?, ?, ?)",
+            tiposRegistrados.map { it.toString() }.toTypedArray(),
             "${CallLog.Calls.DATE} DESC"
         )
 
         cursor?.use {
             val columnaNumero = it.getColumnIndex(CallLog.Calls.NUMBER)
             val columnaFecha = it.getColumnIndex(CallLog.Calls.DATE)
+            val columnaTipo = it.getColumnIndex(CallLog.Calls.TYPE)
 
             while (it.moveToNext()) {
                 val numero = it.getString(columnaNumero) ?: "Desconocido"
                 val fechaMillis = it.getLong(columnaFecha)
+                val tipoRegistro = it.getInt(columnaTipo)
 
                 val fecha = SimpleDateFormat(
                     "dd/MM/yyyy HH:mm",
@@ -72,7 +88,14 @@ class MainActivity : ComponentActivity() {
                 val (prefijo, tipo) = clasificarNumero(numero)
 
                 llamadas.add(
-                    Llamada(numero, prefijo, tipo, fecha)
+                    Llamada(
+                        numero = numero,
+                        prefijo = prefijo,
+                        tipo = tipo,
+                        fecha = fecha,
+                        bloqueada = tipoRegistro == CallLog.Calls.BLOCKED_TYPE ||
+                            tipoRegistro == CallLog.Calls.REJECTED_TYPE
+                    )
                 )
             }
         }
@@ -146,6 +169,44 @@ class MainActivity : ComponentActivity() {
                     actualizarLlamadas()
                 }
 
+                // El registro de llamadas se actualiza en segundo plano cuando
+                // termina una llamada. Escuchamos ese cambio para que el
+                // contador no se quede con el valor de la primera llamada.
+                DisposableEffect(Unit) {
+                    val observador = object : ContentObserver(
+                        Handler(Looper.getMainLooper())
+                    ) {
+                        override fun onChange(selfChange: Boolean) {
+                            val concedido = ContextCompat.checkSelfPermission(
+                                this@MainActivity,
+                                Manifest.permission.READ_CALL_LOG
+                            ) == PackageManager.PERMISSION_GRANTED
+
+                            if (concedido) {
+                                llamadas = obtenerLlamadas()
+                                mensaje = "Historial actualizado."
+                            }
+                        }
+                    }
+
+                    contentResolver.registerContentObserver(
+                        CallLog.Calls.CONTENT_URI,
+                        true,
+                        observador
+                    )
+
+                    onDispose {
+                        contentResolver.unregisterContentObserver(observador)
+                    }
+                }
+
+                val contadores = llamadas.groupingBy { it.tipo }.eachCount()
+                val spam = contadores["SPAM"] ?: 0
+                val sospechosas = contadores["SOSPECHOSO"] ?: 0
+                val permitidas = contadores["PERMITIDO"] ?: 0
+                val desconocidas = contadores["DESCONOCIDO"] ?: 0
+                val bloqueadas = llamadas.count { it.bloqueada }
+
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
@@ -176,8 +237,40 @@ class MainActivity : ComponentActivity() {
                                     style = MaterialTheme.typography.displayLarge
                                 )
                                 Text(
-                                    "Total de llamadas entrantes del registro",
+                                    "Entrantes, perdidas, rechazadas y bloqueadas",
                                     style = MaterialTheme.typography.bodySmall
+                                )
+                                Text(
+                                    text = "$bloqueadas bloqueadas por la app",
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        Card(modifier = Modifier.fillMaxWidth()) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                verticalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                FilaContador("SPAM", spam, Color(0xFFD32F2F))
+                                FilaContador(
+                                    "SOSPECHOSO",
+                                    sospechosas,
+                                    Color(0xFFFF9800)
+                                )
+                                FilaContador(
+                                    "PERMITIDO",
+                                    permitidas,
+                                    Color(0xFF388E3C)
+                                )
+                                FilaContador(
+                                    "DESCONOCIDO",
+                                    desconocidas,
+                                    Color.Gray
                                 )
                             }
                         }
@@ -245,6 +338,13 @@ class MainActivity : ComponentActivity() {
                                                 text = "Clasificación: ${llamada.tipo}",
                                                 color = colorTipo
                                             )
+                                            if (llamada.bloqueada) {
+                                                Text(
+                                                    text = "Bloqueada por el filtro",
+                                                    color = MaterialTheme.colorScheme.error,
+                                                    style = MaterialTheme.typography.bodySmall
+                                                )
+                                            }
                                         }
                                     }
                                 }
@@ -254,5 +354,23 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun FilaContador(
+    nombre: String,
+    cantidad: Int,
+    color: Color
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(text = nombre, color = color)
+        Text(
+            text = cantidad.toString(),
+            style = MaterialTheme.typography.titleMedium
+        )
     }
 }
