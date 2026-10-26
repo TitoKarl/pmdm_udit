@@ -21,6 +21,9 @@ android {
 
     buildTypes {
         release {
+            // Sin esto Gradle genera app-release-unsigned.apk, que Android
+            // no deja instalar. Para el proyecto vale la firma de debug.
+            signingConfig = signingConfigs.getByName("debug")
             optimization {
                 enable = false
             }

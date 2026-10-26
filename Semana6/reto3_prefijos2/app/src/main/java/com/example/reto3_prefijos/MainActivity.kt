@@ -21,9 +21,11 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -42,6 +44,20 @@ data class Llamada(
     val fecha: String,
     val bloqueada: Boolean
 )
+
+private val tiposLlamada = listOf(
+    "SPAM",
+    "SOSPECHOSO",
+    "PERMITIDO",
+    "DESCONOCIDO"
+)
+
+private fun colorParaTipo(tipo: String): Color = when (tipo) {
+    "SPAM" -> Color(0xFFD32F2F)
+    "SOSPECHOSO" -> Color(0xFFFF9800)
+    "PERMITIDO" -> Color(0xFF388E3C)
+    else -> Color.Gray
+}
 
 class MainActivity : ComponentActivity() {
 
@@ -136,13 +152,20 @@ class MainActivity : ComponentActivity() {
                 var mostrarLog by remember {
                     mutableStateOf(false)
                 }
+                var filtroTipo by remember {
+                    mutableStateOf("TODAS")
+                }
                 var mensaje by remember {
                     mutableStateOf("Concede permiso para consultar las llamadas.")
+                }
+                var permisoConcedido by remember {
+                    mutableStateOf(false)
                 }
 
                 val permisoLauncher = rememberLauncherForActivityResult(
                     ActivityResultContracts.RequestPermission()
                 ) { concedido ->
+                    permisoConcedido = concedido
                     if (concedido) {
                         llamadas = obtenerLlamadas()
                         mensaje = "Historial actualizado."
@@ -156,6 +179,8 @@ class MainActivity : ComponentActivity() {
                         this,
                         Manifest.permission.READ_CALL_LOG
                     ) == PackageManager.PERMISSION_GRANTED
+
+                    permisoConcedido = concedido
 
                     if (concedido) {
                         llamadas = obtenerLlamadas()
@@ -172,7 +197,15 @@ class MainActivity : ComponentActivity() {
                 // El registro de llamadas se actualiza en segundo plano cuando
                 // termina una llamada. Escuchamos ese cambio para que el
                 // contador no se quede con el valor de la primera llamada.
-                DisposableEffect(Unit) {
+                //
+                // Solo se registra cuando ya hay permiso: registrar el
+                // observador sin READ_CALL_LOG lanza SecurityException y
+                // cierra la app antes de poder pedir el permiso.
+                DisposableEffect(permisoConcedido) {
+                    if (!permisoConcedido) {
+                        return@DisposableEffect onDispose { }
+                    }
+
                     val observador = object : ContentObserver(
                         Handler(Looper.getMainLooper())
                     ) {
@@ -189,14 +222,22 @@ class MainActivity : ComponentActivity() {
                         }
                     }
 
-                    contentResolver.registerContentObserver(
-                        CallLog.Calls.CONTENT_URI,
-                        true,
-                        observador
-                    )
+                    try {
+                        contentResolver.registerContentObserver(
+                            CallLog.Calls.CONTENT_URI,
+                            true,
+                            observador
+                        )
+                    } catch (_: SecurityException) {
+                        // El permiso se ha revocado: no hay nada que observar.
+                    }
 
                     onDispose {
-                        contentResolver.unregisterContentObserver(observador)
+                        try {
+                            contentResolver.unregisterContentObserver(observador)
+                        } catch (_: SecurityException) {
+                            // Sin permiso no se puede desregistrar; no pasa nada.
+                        }
                     }
                 }
 
@@ -206,121 +247,167 @@ class MainActivity : ComponentActivity() {
                 val permitidas = contadores["PERMITIDO"] ?: 0
                 val desconocidas = contadores["DESCONOCIDO"] ?: 0
                 val bloqueadas = llamadas.count { it.bloqueada }
+                val llamadasFiltradas = if (filtroTipo == "TODAS") {
+                    llamadas
+                } else {
+                    llamadas.filter { it.tipo == filtroTipo }
+                }
 
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(20.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
+                    // Todo va dentro del LazyColumn: así la pantalla completa se
+                    // puede desplazar y el log queda siempre accesible, aunque
+                    // la cabecera ocupe más que la altura del móvil.
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(20.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        Text(
-                            text = "Control de llamadas",
-                            style = MaterialTheme.typography.headlineMedium
-                        )
-
-                        Spacer(modifier = Modifier.height(20.dp))
-
-                        Card(modifier = Modifier.fillMaxWidth()) {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(20.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                Text("Llamadas recibidas")
-                                Text(
-                                    text = llamadas.size.toString(),
-                                    style = MaterialTheme.typography.displayLarge
-                                )
-                                Text(
-                                    "Entrantes, perdidas, rechazadas y bloqueadas",
-                                    style = MaterialTheme.typography.bodySmall
-                                )
-                                Text(
-                                    text = "$bloqueadas bloqueadas por la app",
-                                    style = MaterialTheme.typography.bodySmall
-                                )
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(12.dp))
-
-                        Card(modifier = Modifier.fillMaxWidth()) {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(16.dp),
-                                verticalArrangement = Arrangement.spacedBy(6.dp)
-                            ) {
-                                FilaContador("SPAM", spam, Color(0xFFD32F2F))
-                                FilaContador(
-                                    "SOSPECHOSO",
-                                    sospechosas,
-                                    Color(0xFFFF9800)
-                                )
-                                FilaContador(
-                                    "PERMITIDO",
-                                    permitidas,
-                                    Color(0xFF388E3C)
-                                )
-                                FilaContador(
-                                    "DESCONOCIDO",
-                                    desconocidas,
-                                    Color.Gray
-                                )
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(12.dp))
-
-                        Button(
-                            onClick = { actualizarLlamadas() },
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text("Actualizar llamadas")
-                        }
-
-                        Button(
-                            onClick = { mostrarLog = !mostrarLog },
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
+                        item {
                             Text(
-                                if (mostrarLog) "Ocultar log" else "Ver log de llamadas"
+                                text = "Control de llamadas",
+                                style = MaterialTheme.typography.headlineMedium
                             )
                         }
 
-                        Spacer(modifier = Modifier.height(8.dp))
+                        item {
+                            Card(modifier = Modifier.fillMaxWidth()) {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(20.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    Text("Llamadas recibidas")
+                                    Text(
+                                        text = llamadas.size.toString(),
+                                        style = MaterialTheme.typography.displayLarge
+                                    )
+                                    Text(
+                                        "Entrantes, perdidas, rechazadas y bloqueadas",
+                                        style = MaterialTheme.typography.bodySmall
+                                    )
+                                    Text(
+                                        text = "$bloqueadas bloqueadas por la app",
+                                        style = MaterialTheme.typography.bodySmall
+                                    )
+                                }
+                            }
+                        }
 
-                        Text(
-                            text = mensaje,
-                            style = MaterialTheme.typography.bodySmall
-                        )
+                        item {
+                            Card(modifier = Modifier.fillMaxWidth()) {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(16.dp),
+                                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    FilaContador("SPAM", spam, Color(0xFFD32F2F))
+                                    FilaContador(
+                                        "SOSPECHOSO",
+                                        sospechosas,
+                                        Color(0xFFFF9800)
+                                    )
+                                    FilaContador(
+                                        "PERMITIDO",
+                                        permitidas,
+                                        Color(0xFF388E3C)
+                                    )
+                                    FilaContador(
+                                        "DESCONOCIDO",
+                                        desconocidas,
+                                        Color.Gray
+                                    )
+                                }
+                            }
+                        }
+
+                        item {
+                            Button(
+                                onClick = { actualizarLlamadas() },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text("Actualizar llamadas")
+                            }
+                        }
+
+                        item {
+                            Button(
+                                onClick = { mostrarLog = !mostrarLog },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text(
+                                    if (mostrarLog) "Ocultar log" else "Ver log de llamadas"
+                                )
+                            }
+                        }
+
+                        item {
+                            Text(
+                                text = mensaje,
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
 
                         if (mostrarLog) {
-                            Spacer(modifier = Modifier.height(12.dp))
+                            item {
+                                Column(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    Text(
+                                        text = "Registro de llamadas",
+                                        style = MaterialTheme.typography.titleLarge
+                                    )
 
-                            Text(
-                                text = "Registro de llamadas",
-                                style = MaterialTheme.typography.titleLarge
-                            )
+                                    // Filtro por tipo de llamada. FlowRow hace que los
+                                    // chips pasen a otra línea si no caben, así
+                                    // "Desconocido" siempre queda a la vista.
+                                    FlowRow(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                                    ) {
+                                        ChipFiltro(
+                                            texto = "Todas",
+                                            tipo = "TODAS",
+                                            filtroActual = filtroTipo
+                                        ) { filtroTipo = it }
 
-                            Spacer(modifier = Modifier.height(8.dp))
-
-                            LazyColumn(
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                items(llamadas) { llamada ->
-                                    val colorTipo = when (llamada.tipo) {
-                                        "SPAM" -> Color(0xFFD32F2F)
-                                        "SOSPECHOSO" -> Color(0xFFFF9800)
-                                        "PERMITIDO" -> Color(0xFF388E3C)
-                                        else -> Color.Gray
+                                        tiposLlamada.forEach { tipo ->
+                                            ChipFiltro(
+                                                texto = tipo,
+                                                tipo = tipo,
+                                                filtroActual = filtroTipo
+                                            ) { filtroTipo = it }
+                                        }
                                     }
+
+                                    Text(
+                                        text = "Mostrando ${llamadasFiltradas.size} de ${llamadas.size}",
+                                        style = MaterialTheme.typography.bodySmall
+                                    )
+                                }
+                            }
+
+                            if (llamadasFiltradas.isEmpty()) {
+                                item {
+                                    Text(
+                                        text = if (llamadas.isEmpty()) {
+                                            "No hay llamadas registradas."
+                                        } else {
+                                            "No hay llamadas de tipo $filtroTipo."
+                                        },
+                                        style = MaterialTheme.typography.bodySmall
+                                    )
+                                }
+                            } else {
+                                items(llamadasFiltradas) { llamada ->
+                                    val colorTipo = colorParaTipo(llamada.tipo)
 
                                     Card(
                                         modifier = Modifier.fillMaxWidth()
@@ -355,6 +442,27 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+}
+
+@Composable
+private fun ChipFiltro(
+    texto: String,
+    tipo: String,
+    filtroActual: String,
+    onClick: (String) -> Unit
+) {
+    FilterChip(
+        selected = filtroActual == tipo,
+        onClick = { onClick(tipo) },
+        label = { Text(texto) },
+        leadingIcon = {
+            Box(
+                modifier = Modifier
+                    .size(10.dp)
+                    .background(colorParaTipo(tipo), CircleShape)
+            )
+        }
+    )
 }
 
 @Composable
