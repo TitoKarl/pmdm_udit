@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.Reto3_prefijos" parent="android:Theme.Material.Light.NoActionBar" />
+    <style name="Theme.PreBlocker" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/negro_fondo</item>
+        <item name="android:statusBarColor">@color/negro_fondo</item>
+        <item name="android:navigationBarColor">@color/negro_fondo</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
 </resources>
