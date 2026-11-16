@@ -7,7 +7,7 @@ void main() {
   testWidgets('El catálogo muestra el contenido destacado', (
     WidgetTester tester,
   ) async {
-    await tester.pumpWidget(const UditflixApp());
+    await tester.pumpWidget(const MyApp());
 
     expect(find.byType(CatalogoScreen), findsOneWidget);
     expect(find.text('La Última Frontera'), findsWidgets);

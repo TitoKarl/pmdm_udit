@@ -1,43 +1,48 @@
 // DATOS SIMULADOS DE UDITFLIX
 
-// En esta primera version no tenemos una API ni una base de datos.
+// En esta primera versión no tenemos una API ni una base de datos.
 // Por eso utilizamos una lis de objetos creada manualmente
 
-// Mas adelante sustituiremos estos datos por informacion
+// Más adelante sustituiremos estos datos por información
 // que recibiremos desde el servidor mediante una API REST
 
 import '../models/contenido.dart';
 
-// Lista de contenidos que aparecen en nuestra aplicacion
-// Cada elemento de la lista es un objeto de tipo Contenido.
+
+// Lista de contenidos que aparecerán en nuestra aplicación.
+// Cada elemento de lista es un objeto de tipo Contenido
 
 const List<Contenido> contenidos = [
+    
     Contenido(
         id: 1,
-        titulo: 'Introduccion a Flutter',
+        titulo: 'Introducción a Flutter',
         descripcion: 'Aprende a crear aplicaciones multiplataforma',
-        tipo: 'video',
-        duracion: '15 minutos'
+        tipo: 'Video',
+        duracion: '15 minutos',
     ),
     Contenido(
         id: 2,
-        titulo: 'Desarrollo con java',
-        descripcion: 'Introduccion a la programacion orientada a objetos',
-        tipo: 'video',
-        duracion: '25 minutos'
+        titulo: 'Desarrollo con Java',
+        descripcion: 'Introducción a la programación orientada a obejtos',
+        tipo: 'Video',
+        duracion: '25 minutos',
     ),
-    Contenido(
+
+        Contenido(
         id: 3,
-        titulo: 'El mundo de los comics',
-        descripcion: 'Una coleccion de historias y aventuras ilustradas',
-        tipo: 'comic',
-        duracion: '10 paginas'
+        titulo: 'El mundo de los cómics',
+        descripcion: 'Una colección de historias y aventuras ilustradas',
+        tipo: 'Cómic',
+        duracion: '10 páginas',
     ),
+
     Contenido(
         id: 4,
-        titulo: 'Programacion de videojuegos',
-        descripcion: 'Descubre los fundamentos de la logica de los videojuegos',
+        titulo: 'Programación de videojuegos',
+        descripcion: 'Descubre los fundamentos de la lógica de videojuegos',
         tipo: 'Juego',
-        duracion: '20 minutos'
-    ),
+        duracion: '20 minutos',
+    ),   
+
 ];
