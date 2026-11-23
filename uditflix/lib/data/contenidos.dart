@@ -1,48 +1,121 @@
-// DATOS SIMULADOS DE UDITFLIX
-
-// En esta primera versión no tenemos una API ni una base de datos.
-// Por eso utilizamos una lis de objetos creada manualmente
-
-// Más adelante sustituiremos estos datos por información
-// que recibiremos desde el servidor mediante una API REST
-
 import '../models/contenido.dart';
 
-
-// Lista de contenidos que aparecerán en nuestra aplicación.
-// Cada elemento de lista es un objeto de tipo Contenido
-
+/// Catálogo de ejemplo de Uditflix.
 const List<Contenido> contenidos = [
-    
-    Contenido(
-        id: 1,
-        titulo: 'Introducción a Flutter',
-        descripcion: 'Aprende a crear aplicaciones multiplataforma',
-        tipo: 'Video',
-        duracion: '15 minutos',
-    ),
-    Contenido(
-        id: 2,
-        titulo: 'Desarrollo con Java',
-        descripcion: 'Introducción a la programación orientada a obejtos',
-        tipo: 'Video',
-        duracion: '25 minutos',
-    ),
-
-        Contenido(
-        id: 3,
-        titulo: 'El mundo de los cómics',
-        descripcion: 'Una colección de historias y aventuras ilustradas',
-        tipo: 'Cómic',
-        duracion: '10 páginas',
-    ),
-
-    Contenido(
-        id: 4,
-        titulo: 'Programación de videojuegos',
-        descripcion: 'Descubre los fundamentos de la lógica de videojuegos',
-        tipo: 'Juego',
-        duracion: '20 minutos',
-    ),   
-
+  Contenido(
+    id: 'la-ultima-frontera',
+    titulo: 'La Última Frontera',
+    sinopsis:
+        'Una tripulación perdida despierta a años luz de casa. Sin mapa ni '
+        'contacto con la Tierra, deberán decidir si regresar o convertirse en '
+        'la primera colonia humana de una galaxia desconocida.',
+    semillaImagen: 'uditflix-frontera',
+    anio: 2024,
+    generos: ['Ciencia ficción', 'Aventura'],
+    tipo: TipoContenido.pelicula,
+    duracionMinutos: 128,
+    valoracion: 8.4,
+  ),
+  Contenido(
+    id: 'sombras-de-madrid',
+    titulo: 'Sombras de Madrid',
+    sinopsis:
+        'Una inspectora recién llegada a Madrid descubre que los casos más '
+        'antiguos del archivo policial comparten un mismo sospechoso: alguien '
+        'que lleva décadas sin envejecer.',
+    semillaImagen: 'uditflix-madrid',
+    anio: 2023,
+    generos: ['Drama', 'Intriga'],
+    tipo: TipoContenido.serie,
+    duracionMinutos: 52,
+    valoracion: 8.1,
+    temporadas: 3,
+  ),
+  Contenido(
+    id: 'codigo-rojo',
+    titulo: 'Código Rojo',
+    sinopsis:
+        'Un especialista en rescates tiene 24 horas para desactivar el sistema '
+        'de seguridad de la ciudad antes de que un ataque coordinado deje a '
+        'millones de personas incomunicadas.',
+    semillaImagen: 'uditflix-codigo',
+    anio: 2025,
+    generos: ['Acción', 'Thriller'],
+    tipo: TipoContenido.pelicula,
+    duracionMinutos: 112,
+    valoracion: 7.6,
+  ),
+  Contenido(
+    id: 'el-jardin-de-las-horas',
+    titulo: 'El Jardín de las Horas',
+    sinopsis:
+        'En una casa rural donde cada reloj marca una hora distinta, una '
+        'familia intenta recomponer su historia mientras el tiempo parece '
+        'avanzar en direcciones opuestas.',
+    semillaImagen: 'uditflix-jardin',
+    anio: 2022,
+    generos: ['Misterio', 'Drama'],
+    tipo: TipoContenido.serie,
+    duracionMinutos: 48,
+    valoracion: 8.8,
+    temporadas: 2,
+  ),
+  Contenido(
+    id: 'risas-de-medianoche',
+    titulo: 'Risas de Medianoche',
+    sinopsis:
+        'Un cómico en crisis acepta presentar el peor programa de la televisión '
+        'local. Lo que empieza como un castigo se convierte en el fenómeno que '
+        'nadie vio venir.',
+    semillaImagen: 'uditflix-risas',
+    anio: 2021,
+    generos: ['Comedia'],
+    tipo: TipoContenido.pelicula,
+    duracionMinutos: 98,
+    valoracion: 7.2,
+  ),
+  Contenido(
+    id: 'orbita-7',
+    titulo: 'Órbita 7',
+    sinopsis:
+        'La primera estación espacial comercial de Europa recibe una señal que '
+        'no debería existir. La tripulación tiene siete días para averiguar '
+        'quién —o qué— la está enviando.',
+    semillaImagen: 'uditflix-orbita',
+    anio: 2025,
+    generos: ['Ciencia ficción', 'Suspense'],
+    tipo: TipoContenido.serie,
+    duracionMinutos: 45,
+    valoracion: 9.0,
+    temporadas: 1,
+  ),
+  Contenido(
+    id: 'caminos-de-sal',
+    titulo: 'Caminos de Sal',
+    sinopsis:
+        'Dos hermanos heredan un viejo velero y el diario de su padre. Al '
+        'reconstruir el último viaje que nunca terminó, descubren una verdad '
+        'que llevaba veinte años esperando en la costa.',
+    semillaImagen: 'uditflix-sal',
+    anio: 2020,
+    generos: ['Drama', 'Aventura'],
+    tipo: TipoContenido.pelicula,
+    duracionMinutos: 117,
+    valoracion: 7.9,
+  ),
+  Contenido(
+    id: 'el-bosque-callado',
+    titulo: 'El Bosque Callado',
+    sinopsis:
+        'Cada invierno, el pueblo de Valdeluz pierde la señal de radio durante '
+        'tres días. Este año, la nueva maestra de la escuela decide averiguar '
+        'qué ocurre entre los árboles.',
+    semillaImagen: 'uditflix-bosque',
+    anio: 2024,
+    generos: ['Terror', 'Misterio'],
+    tipo: TipoContenido.serie,
+    duracionMinutos: 50,
+    valoracion: 8.3,
+    temporadas: 2,
+  ),
 ];

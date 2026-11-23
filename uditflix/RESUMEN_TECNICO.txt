@@ -1,0 +1,265 @@
+ACTUALIZACIÓN RECIENTE (BUSCAMINAS)
+===================================
+- lib/screens/arcade_screen.dart ya no es Flappy Bird: ahora es un buscaminas
+  sencillo de 9x9 con 10 minas, implementado solo con Flutter (toque para
+  descubrir, pulsacion larga o clic derecho para marcar banderas).
+- Se ha eliminado la dependencia "flame" de pubspec.yaml y los tests ya no
+  usan GameWidget.
+- Fotos mas pequeñas: destacado de 440 a 320 px, tarjetas con
+  maxCrossAxisExtent 160 y childAspectRatio 0.72, ficha de 460 a 300 px y
+  URLs de picsum de 500x750 a 300x450.
+- El resto de este documento describe la version anterior (con Flappy Bird).
+
+
+RESUMEN TECNICO DE UDITFLIX
+===========================
+
+Ruta del proyecto:
+C:\Users\jrodr\Documents\UDIT\PMDM\pmdm_udit\uditflix
+
+
+1. STACK Y VERSIONES
+--------------------
+
+Framework ....... Flutter 3.47.7 (stable)
+Dart ............ 3.13.5 (environment: sdk: ^3.13.5)
+UI .............. Material 3, tema oscuro, ColorScheme.fromSeed con rojo 0xFFE50914
+Motor 2D ........ flame ^1.38.2 (resuelta 1.38.2)
+Video ........... video_player ^2.14.1 (resuelta 2.14.1)
+Iconos .......... cupertino_icons ^1.0.8
+Tests ........... flutter_test + flutter_lints ^6.0.0
+Plataformas ..... android/, ios/, web/, windows/, linux/, macos/
+
+pubspec.yaml solo anade dos dependencias respecto al proyecto inicial:
+flame y video_player.
+
+
+2. ESTRUCTURA DEL CODIGO
+------------------------
+
+lib/
+  main.dart                    -> MyApp + MaterialApp + tema + home
+  models/contenido.dart        -> enum TipoContenido + clase Contenido
+  data/contenidos.dart         -> catalogo const de 8 titulos (URLs picsum.photos)
+  screens/
+    catalogo_screen.dart       -> pantalla principal (Slivers + grid + destacado)
+    ficha_screen.dart          -> detalle de pelicula/serie
+    reproductor_screen.dart    -> reproductor con video_player
+    arcade_screen.dart         -> minijuego Flappy con Flame
+test/
+  widget_test.dart             -> 4 pruebas de widget
+
+
+3. ARQUITECTURA Y FLUJO
+-----------------------
+
+- main() -> runApp(const MyApp()).
+- MyApp configura MaterialApp(home: CatalogoScreen()), tema oscuro y
+  SnackBarBehavior.floating.
+- CatalogoScreen usa CustomScrollView con SliverAppBar fijo, _Destacado,
+  acceso a Arcade, cabecera y SliverGrid de 2 columnas (childAspectRatio 0.64).
+- Navegacion con Navigator.of(context).push(MaterialPageRoute(...)):
+    Tarjeta/destacado -> FichaScreen.
+    Boton "Reproducir" -> ReproductorScreen.
+    Tarjeta "UDIT Arcade" -> ArcadeScreen.
+- Imagenes con Image.network + Hero (portada-${id}, destacado-${id}),
+  loadingBuilder y errorBuilder con placeholder. PortadaAncha (widgets/)
+  pide la misma foto de Picsum en 800/1600/2400/3200 px segun el ancho real
+  y el devicePixelRatio, para que el destacado y la ficha no se vean pixelados.
+
+Modelo Contenido:
+id, titulo, sinopsis, semillaImagen, anio, generos, tipo, duracionMinutos,
+valoracion, temporadas.
+Getters: portada (300x450), portadaAncha(ancho) (16:9), esSerie,
+duracionFormateada, generosTexto.
+
+
+4. LIBRERIAS: QUE HACEN Y DONDE SE USAN
+---------------------------------------
+
+4.1. Flame 1.38.2 (lib/screens/arcade_screen.dart)
+---------------------------------------------------
+Es el motor del minijuego UDIT Arcade.
+
+- FlameGame + mixins HasCollisionDetection y KeyboardEvents.
+- GameWidget<FlappyUditGame> integra el bucle de juego en el arbol Flutter.
+- World / CameraComponent: size del juego = viewport virtual; componentes
+  anadidos con world.add(...).
+- Componentes:
+    _Pajaro: CircleComponent (radio 16, color 0xFFFFC107) con
+             CircleHitbox tipo active.
+    _Tubo: RectangleComponent verde 0xFF4CAF50 con
+           RectangleHitbox tipo passive.
+    _Suelo: rectangulo gris reposicionado en onGameResize.
+    _ZonaToque: rectangulo transparente a pantalla completa con
+                TapCallbacks, priority 100; captura toque en movil y clic en PC.
+- onLoad() crea el pajaro, suelo y zona de toque.
+- update(dt): gravedad, movimiento de tubos, generacion cada 1.8 s.
+- onCollisionStart(...): si el pajaro toca un tubo -> _finalizar().
+- Puntuacion: se suma cuando el borde derecho del tubo inferior pasa la x
+  del pajaro.
+- paused = true al terminar; el reinicio crea un FlappyUditGame nuevo y
+  cambia el ValueKey del GameWidget.
+
+Constantes actuales (tras el arreglo):
+gravedad 620, salto -250, ancho tubo 72, hueco 190, velocidad 170,
+intervalo 1.8 s, suelo 60.
+
+Arreglo reciente:
+El juego espera al primer toque/Espacio antes de aplicar gravedad
+(_Pajaro.enEspera), admite teclado (Space, flecha arriba, W) para PC, y
+calcula el hueco con clamp(110, 190) y margenes de 40 px para pantallas
+pequenas o en horizontal.
+
+4.2. video_player 2.14.1 (lib/screens/reproductor_screen.dart)
+--------------------------------------------------------------
+- VideoPlayerController.networkUrl(Uri.parse(videoDemoUrl)) con video demo:
+  https://media.w3.org/2010/05/sintel/trailer.mp4
+- Escucha cambios con addListener; controla initialize(), play(), pause(),
+  seekTo().
+- Controles: play/pausa, +/-10 s, slider de progreso, tiempo y pantalla
+  completa.
+- Fullscreen usa SystemChrome.setPreferredOrientations([...landscape...]) y
+  reutiliza el mismo controlador en _PantallaCompleta.
+- LIMITACION IMPORTANTE: video_player oficial soporta Android, iOS, macOS y
+  Web; NO soporta Windows/Linux nativo. En PC nativo el reproductor falla.
+  En web funciona.
+
+4.3. flutter_test / flutter_lints
+---------------------------------
+- flutter analyze limpio.
+- flutter test -> 4 pruebas: catalogo, navegacion a ficha/reproductor,
+  acceso a Arcade y espera+teclado del arcade.
+- configurarPantalla(tester) fija 1200x1800 para que los slivers esten
+  montados.
+- Nota: la prueba accede al pajaro privado con
+  runtimeType.toString() == '_Pajaro' y dynamic; es fragil pero evita
+  anadir flame_test.
+
+
+5. CONFIGURACION MULTIPLATAFORMA
+--------------------------------
+
+Android:
+  AndroidManifest.xml con
+  <uses-permission android:name="android.permission.INTERNET"/>
+  (necesario para caratulas y video) y configChanges de orientacion.
+
+iOS:
+  Info.plist con CFBundleDisplayName = Uditflix, orientaciones portrait +
+  landscape izquierda/derecha (iPad tambien upside down). HTTPS permitido;
+  para HTTP haria falta NSAppTransportSecurity.
+
+macOS:
+  GeneratedPluginRegistrant.swift registra VideoPlayerPlugin.
+  Falta anadir com.apple.security.network.client en los entitlements para
+  video por red.
+
+Web:
+  web/index.html, manifest e iconos; flutter build web --release genera
+  build/web (verificado).
+
+Windows/Linux:
+  Carpetas nativas generadas, pero el reproductor no es funcional por la
+  limitacion de video_player.
+
+
+6. ESTADO ACTUAL / DEUDA TECNICA
+--------------------------------
+
+- Catalogo, ficha y arcade funcionan en movil y navegador; en Windows nativo
+  hace falta toolchain de Visual Studio y ademas el reproductor no esta
+  soportado.
+- "Mi lista" solo muestra un SnackBar: no hay persistencia.
+- Caratulas dependen de picsum.photos: sin internet salta el placeholder.
+- No hay audio, guardado de puntuacion ni flame_test.
+- El test del pajaro usa introspeccion por nombre de tipo; mejoraria
+  exponiendo un getter publico o usando flame_test.
+
+
+7. COMANDOS UTILES
+------------------
+
+flutter analyze
+flutter test
+flutter run -d chrome
+flutter run -d <id-de-movil>
+flutter build web --release
+
+
+8. DESPLIEGUE CLOUD (OPCIONAL)
+------------------------------
+
+El build estatico ya esta listo en uditflix/build/web.
+Se puede subir tal cual a Firebase Hosting, Netlify, Vercel o GitHub Pages.
+Si no se sirve desde la raiz:
+
+flutter build web --release --base-href /tu-ruta/
+
+
+=====================================================================
+BLOQUE LISTO PARA PEGAR EN CLAUDE (Anthropic)
+=====================================================================
+
+Actua como ingeniero Flutter senior. Analiza y modifica este proyecto sin
+romper el trabajo existente.
+
+Proyecto: Uditflix
+Ruta: C:\Users\jrodr\Documents\UDIT\PMDM\pmdm_udit\uditflix
+
+Stack: Flutter 3.47.7, Dart 3.13.5, Material 3, tema oscuro rojo 0xFFE50914.
+Dependencias: flame ^1.38.2 (resuelta 1.38.2), video_player ^2.14.1
+(resuelta 2.14.1), cupertino_icons ^1.0.8, flutter_lints ^6.0.0,
+flutter_test.
+
+Estructura:
+- lib/main.dart: MyApp, MaterialApp, home CatalogoScreen.
+- lib/models/contenido.dart: enum TipoContenido {pelicula, serie} y clase
+  Contenido (id, titulo, sinopsis, portada, anio, generos, tipo,
+  duracionMinutos, valoracion, temporadas; getters esSerie,
+  duracionFormateada, generosTexto).
+- lib/data/contenidos.dart: 8 contenidos const con portadas
+  https://picsum.photos/...
+- lib/screens/catalogo_screen.dart: CustomScrollView con SliverAppBar,
+  _Destacado, acceso a Arcade, SliverGrid 2 columnas
+  (childAspectRatio 0.64), Hero tags portada-${id} / destacado-${id},
+  Image.network con loading/error builder.
+- lib/screens/ficha_screen.dart: SliverAppBar expandedHeight 460, ficha
+  tecnica, botones Reproducir y Mi lista (solo SnackBar).
+- lib/screens/reproductor_screen.dart: VideoPlayerController.networkUrl con
+  https://media.w3.org/2010/05/sintel/trailer.mp4, controles play/pausa,
+  +/-10s, slider, fullscreen con SystemChrome.setPreferredOrientations y
+  _PantallaCompleta reutilizando el controlador.
+- lib/screens/arcade_screen.dart: minijuego Flappy con Flame. ArcadeScreen
+  tiene ValueNotifiers puntuacion/terminado/iniciado y ValueKey _partida.
+  FlappyUditGame extends FlameGame with HasCollisionDetection,
+  KeyboardEvents. Componentes: _Pajaro CircleComponent radio 16 +
+  CircleHitbox active; _Tubo RectangleComponent verde + RectangleHitbox
+  passive; _Suelo; _ZonaToque transparente con TapCallbacks priority 100.
+  Constantes: gravedad 620, salto -250, ancho tubo 72, hueco 190,
+  velocidad 170, intervalo 1.8s, suelo 60. Empieza solo tras primer
+  toque/Espacio (_Pajaro.enEspera). Teclado: Space/ArrowUp/W. Hueco
+  adaptado con clamp(110,190) y margen 40. Puntuacion al pasar tubo
+  inferior. Game over pone paused=true; reinicio crea nuevo juego.
+- test/widget_test.dart: 4 pruebas; configurarPantalla 1200x1800; la del
+  arcade accede al pajaro por runtimeType.toString()=='_Pajaro' con dynamic.
+
+Estado: flutter analyze limpio, flutter test 4/4 OK,
+flutter build web --release OK.
+
+Limitaciones conocidas:
+1. video_player NO soporta Windows/Linux nativo; en PC usar web
+   (flutter run -d chrome). Para macOS falta entitlement
+   com.apple.security.network.client.
+2. Sin internet las caratulas picsum muestran placeholder.
+3. Mi lista no persiste (solo SnackBar).
+4. Test del pajaro fragil; ideal migrar a flame_test o getter publico.
+
+Quiero que propongas (sin aplicar aun) mejoras priorizadas para:
+(a) hacer el reproductor utilizable en escritorio,
+(b) persistir Mi lista,
+(c) reforzar tests del juego,
+(d) pulir el resumen tecnico para documentacion.
+
+Responde en espanol, con cambios concretos por archivo.
+=====================================================================
